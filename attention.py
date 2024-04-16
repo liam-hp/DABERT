@@ -39,7 +39,7 @@ class Attention(nn.Module):
         self.num_heads = num_heads 
 
         # Q, K, V for each head
-        self.W_Q = nn.Linear(d_model, d_q * num_heads)
+        self.W_Q = nn.Linear(d_model, d_k * num_heads)
         self.W_K = nn.Linear(d_model, d_k * num_heads)
         self.W_V = nn.Linear(d_model, d_v * num_heads)
 

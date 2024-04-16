@@ -17,10 +17,18 @@ class ScaledDotProductAttention(nn.Module):
 
     # @staticmethod
     def forward(self, qmat, kmat, vmat, attention_mask):
+
+        # scores = QK^T / sqrt(d_k)
         scores = torch.matmul(qmat, kmat.transpose(-1, -2)) / np.sqrt(
             self.d_k)  # scores : [batch_size x n_heads x len_q(=len_k) x len_k(=len_q)]
-        scores.masked_fill_(attention_mask, -1e9)  # Fills elements of self tensor with value where mask is one.
+
+        # Basically removes elements of scores tensor were we have a masked token
+        scores.masked_fill_(attention_mask, -1e9) 
+
+        # Softmax on the scores matrix
         attention = nn.Softmax(dim=-1)(scores)
+
+        # context = softmax(QK^T / sqrt(d_k))V
         context = torch.matmul(attention, vmat)
 
         return context, attention
@@ -44,11 +52,20 @@ class Attention(nn.Module):
         self.W_V = nn.Linear(d_model, d_v * num_heads)
 
     def forward(self, qmat, kmat, vmat, attention_mask):
+        # q: [batch_size x len_q x d_model] 
+        # k: [batch_size x len_k x d_model]
+        # v: [batch_size x len_k x d_model]
         residual, batch_size_head = qmat, qmat.size(0)
 
+        # 1) Do all the linear projections in batch from d_model => d_k x num_heads
+        # 2) .view(): [batch_size x len_q x d_model] -> [batch_size x len_q x n_heads x d_k]
+        # 3) .transpose(): [batch_size x len_q x n_heads x d_k] -> [batch_size x n_heads x len_q x d_k]
         q_s = self.W_Q(qmat).view(batch_size_head, -1, self.num_heads, self.d_k).transpose(1, 2)
+        # q_s: [batch_size x n_heads x len_q x d_k]
         k_s = self.W_K(kmat).view(batch_size_head, -1, self.num_heads, self.d_k).transpose(1, 2)
+        # k_s: [batch_size x n_heads x len_k x d_k]
         v_s = self.W_V(vmat).view(batch_size_head, -1, self.num_heads, self.d_v).transpose(1, 2)
+        # v_s: [batch_size x n_heads x len_k x d_v]
 
         attention_mask = attention_mask.unsqueeze(1).repeat(1, self.num_heads, 1, 1)
 

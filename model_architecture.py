@@ -155,6 +155,10 @@ class BERT(nn.Module):
         self.decoder_bias = nn.Parameter(torch.zeros(num_vocab))
 
     def forward(self, modelinput_ids, modelsegment_ids, modelmasked_pos):
+        # print("forward with")
+        # print("    input_ids: ", modelinput_ids.shape)
+        # print("    segment_ids: ", modelsegment_ids.shape)
+
         output = self.embedding(modelinput_ids, modelsegment_ids)
         enc_self_attention_mask = get_attention_pad_mask(modelinput_ids, modelinput_ids)
 

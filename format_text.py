@@ -1,20 +1,22 @@
 import urllib.request
 import re
 
-url1 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%201%20" \
-       "-%20The%20Philosopher's%20Stone.txt "
-url2 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%202%20" \
-       "-%20The%20Chamber%20of%20Secrets.txt "
-url3 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%203%20" \
-       "-%20The%20Prisoner%20of%20Azkaban.txt "
-url4 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%204%20" \
-       "-%20The%20Goblet%20of%20Fire.txt "
-url5 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%205%20" \
-       "-%20The%20Order%20of%20the%20Phoenix.txt "
-url6 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%206%20" \
-       "-%20The%20Half%20Blood%20Prince.txt "
-url7 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%207%20" \
-       "-%20The%20Deathly%20Hallows.txt "
+# url1 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%201%20" \
+#        "-%20The%20Philosopher's%20Stone.txt "
+# url2 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%202%20" \
+#        "-%20The%20Chamber%20of%20Secrets.txt "
+# url3 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%203%20" \
+#        "-%20The%20Prisoner%20of%20Azkaban.txt "
+# url4 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%204%20" \
+#        "-%20The%20Goblet%20of%20Fire.txt "
+# url5 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%205%20" \
+#        "-%20The%20Order%20of%20the%20Phoenix.txt "
+# url6 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%206%20" \
+#        "-%20The%20Half%20Blood%20Prince.txt "
+# url7 = "https://raw.githubusercontent.com/formcept/whiteboard/master/nbviewer/notebooks/data/harrypotter/Book%207%20" \
+#        "-%20The%20Deathly%20Hallows.txt "
+url1 = "https://raw.githubusercontent.com/amephraim/nlp/master/texts/J.%20K.%20Rowling%20-%20Harry%20Potter%201%20-%20Sorcerer's%20Stone.txt"
+url2 = "https://github.com/amephraim/nlp/blob/master/texts/J.%20K.%20Rowling%20-%20Harry%20Potter%202%20-%20The%20Chamber%20Of%20Secrets.txt"
 
 url8 = "https://raw.githubusercontent.com/BrianWeinstein/state-of-the-union/master/transcripts.csv"
 
@@ -34,16 +36,17 @@ def read_file(url, start_phrase, end_phrase, remove):
 
 # load in harry potter books
 
-hptext1 = read_file(url1, 'THE BOY WHO LIVED', 'Page | 348', 'Harry Potter and the Philosophers Stone - J.K. Rowling')
-hptext2 = read_file(url2, 'THE WORST BIRTHDAY', 'Page | 380', 'Harry Potter and the Chamber of Secrets - J.K. Rowling')
-hptext3 = read_file(url3, 'OWL POST', 'Page | 487', 'Harry Potter and the Prisoner of Azkaban - J.K. Rowling')
-hptext4 = read_file(url4, 'THE RIDDLE HOUSE', 'Page | 811', 'Harry Potter and the Goblet of Fire - J.K. Rowling')
-hptext5 = read_file(url5, 'DUDLEY DEMENTED', 'Page | 1108', 'Harry Potter and the Order of the Phoenix - J.K. Rowling')
-hptext6 = read_file(url6, 'THE OTHER MINISTER', 'Page | 730', 'Harry Potter and the Half Blood Prince - J.K. Rowling')
-hptext7 = read_file(url7, 'THE DARK LORD ASCENDING', 'Page | 856',
-                    'Harry Potter and the Deathly Hallows - J.K. Rowling')
+hptext1 = read_file(url1, "Harry Potter and the Sorcerer's Stone", 'THE END', 'Harry Potter and the Philosophers Stone - J.K. Rowling')
+hptext2 = read_file(url2, 'HARRY POTTER AND THE CHAMBER OF SECRETS', '*341*', 'Harry Potter and the Chamber of Secrets - J.K. Rowling')
+# hptext3 = read_file(url3, 'OWL POST', 'Page | 487', 'Harry Potter and the Prisoner of Azkaban - J.K. Rowling')
+# hptext4 = read_file(url4, 'THE RIDDLE HOUSE', 'Page | 811', 'Harry Potter and the Goblet of Fire - J.K. Rowling')
+# hptext5 = read_file(url5, 'DUDLEY DEMENTED', 'Page | 1108', 'Harry Potter and the Order of the Phoenix - J.K. Rowling')
+# hptext6 = read_file(url6, 'THE OTHER MINISTER', 'Page | 730', 'Harry Potter and the Half Blood Prince - J.K. Rowling')
+# hptext7 = read_file(url7, 'THE DARK LORD ASCENDING', 'Page | 856',
+                    # 'Harry Potter and the Deathly Hallows - J.K. Rowling')
 
-hptext = hptext1 + hptext2 + hptext3 + hptext4 + hptext5 + hptext6 + hptext7
+# hptext = hptext1 + hptext2 + hptext3 + hptext4 + hptext5 + hptext6 + hptext7
+hptext = hptext1 + hptext2
 soutext = read_file(url8, '2018-01-30', 'and equal government."', 'date,president,title,url,transcript')
 text = hptext + soutext
 

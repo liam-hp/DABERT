@@ -38,10 +38,10 @@ printinput_ids, printsegment_ids, printmasked_tokens, printmasked_pos = map(torc
 
 masked_sentence = " ".join(
     [testnumber_dict[w.item()] for w in printinput_ids[0] if testnumber_dict[w.item()] != '[PAD]'])
-print('masked sentence : ', masked_sentence)  # sentence with mask still in
-print('actual sentence : ', old_sentence)  # sentence without mask
-print('masked tokens list : ',
-      [pos.item() for pos in printmasked_tokens[0] if pos.item() != 0])  # tokens of words covered by mask
+# print('masked sentence : ', masked_sentence)  # sentence with mask still in
+# print('actual sentence : ', old_sentence)  # sentence without mask
+# print('masked tokens list : ',
+      # [pos.item() for pos in printmasked_tokens[0] if pos.item() != 0])  # tokens of words covered by mask
 
 logits_lm = model(printinput_ids, printsegment_ids, printmasked_pos)
 logits_lm = logits_lm.data.max(2)[1][0].data.numpy()

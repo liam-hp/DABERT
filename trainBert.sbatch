@@ -24,3 +24,4 @@ echo "$USER"
 python BERT_run.py
 # End of job info 
 echo "Ending: "`date +"%D %T"`
+

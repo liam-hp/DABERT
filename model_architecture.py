@@ -14,7 +14,7 @@ num_layers = 6  # number of Encoder Layer
 num_heads = 12  # number of heads in Multi-Head Attention
 d_model = 768  # Embedding Size
 d_ff = 768 * 4  # 4*d_model, FeedForward dimension
-d_k = d_v = 64  # dimension of K(=Q), V
+d_v = 64  # dimension of K(=Q), V
 dropout = 0.1
 
 def get_attention_pad_mask(seq_q, seq_k):
@@ -83,7 +83,7 @@ class EncoderLayer(nn.Module):
     def __init__(self):
         super(EncoderLayer, self).__init__()
         # simple replace of the Attentino head
-        self.enc_self_attention = Attention(d_model, d_k, d_v, num_heads)
+        self.enc_self_attention = Attention(d_model, d_v, num_heads)
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):

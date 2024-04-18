@@ -87,10 +87,10 @@ class EncoderLayer(nn.Module):
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):
-        enc_outputs, attention = self.enc_self_attention(enc_inputs, enc_inputs, enc_inputs,
+        enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_inputs,
                                                          enc_self_attention_mask)  # enc_inputs to same Q,K,V
         enc_outputs = self.pos_ffn(enc_outputs)  # enc_outputs: [batch_size x len_q x d_model]
-        return enc_outputs, attention
+        return enc_outputs 
 
 
 class BERT(nn.Module):
@@ -122,7 +122,7 @@ class BERT(nn.Module):
         enc_self_attention_mask = get_attention_pad_mask(modelinput_ids, modelinput_ids)
 
         for layer in self.layers:
-            output, enc_self_attention = layer(output, enc_self_attention_mask)
+            output = layer(output, enc_self_attention_mask)
         # output : [batch_size, len, d_model], attention : [batch_size, n_heads, d_mode, d_model]
         # it will be decided by first token(CLS)
 

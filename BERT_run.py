@@ -18,13 +18,13 @@ testsentences, testnumber_dict = format_text.get_testing_output()
 batch_num = 0
 
 
-for i in range(0, round(length_sentences / 6), 128):  # loops through all sentences
+for i in range(0, round(length_sentences / 64)):  # loops through all sentences
     trainingbatch = batches.make_training_batch(i)  # making batch
     input_ids, segment_ids, masked_tokens, masked_pos = map(torch.LongTensor,
                                                             zip(*trainingbatch))
     logits_lm = model(input_ids, segment_ids, masked_pos)
     loss = criterion(logits_lm.transpose(1, 2), masked_tokens)  # for masked LM
-    loss_print = loss / 12  # dividing loss over 12 pairs
+    loss_print = loss / 128  # dividing loss over 12 pairs
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()

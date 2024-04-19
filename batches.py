@@ -18,11 +18,10 @@ def make_training_batch(start_index):
     """
     batch = []
 
-    if start_index + 6 > len(
-            sentences):  # may leave off the last few sentences
+    if start_index + 64 > len(sentences):  # may leave off the last few sentences
         end_index = len(sentences) - start_index
     else:
-        end_index = start_index + 6  # six sentence pairs
+        end_index = start_index + 64  # six sentence pairs
 
     for idx in range(start_index, end_index):
         tokens_a_index, tokens_b_index = idx, idx + 1

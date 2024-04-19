@@ -86,7 +86,6 @@ class Attention(nn.Module):
         # scaledAttention = ScaledDotProductAttention(self.d_k)
         scaledAttention = SingleLinearAttentionLayer(self.d_v)
 
-
         multi_head_self_attention = scaledAttention.forward(q_s, v_s, attention_mask)
         # output: for each batch, for each attention head, for each token in the sentence,
         # the attention value
@@ -124,7 +123,7 @@ class SingleLinearAttentionLayer(nn.Module):
         super(SingleLinearAttentionLayer, self).__init__()
         self.d_v = d_v
 
-        self.linearLayer = nn.Linear(d_v * 3, d_v)
+        self.linearLayer = nn.Linear(d_v * 2, d_v)
 
 
     # @staticmethod
@@ -135,16 +134,9 @@ class SingleLinearAttentionLayer(nn.Module):
         # v: [batch_size x num_heads x d_model x d_k]
 
         # 1) get the size of the batch
-        residual, batch_size_head = qmat, qmat.size(0)
-
-
-        # print("shape:", qmat.shape)
-        # print("kshape:", kmat.shape)
-        # print("vshape:", vmat.shape)
+        # residual, batch_size_head = qmat, qmat.size(0)
         
         combined = torch.cat((qmat, vmat), 3)
-
-        # print("combined", combined.shape)
 
         output = self.linearLayer(combined)
         return output

@@ -4,8 +4,10 @@ from torch import cuda
 import torch.optim as optim
 import torch.nn as nn
 import model_architecture
+import early_stopping
 import batches
 # import format_text
+
 import preprocess
 from tqdm import tqdm
 
@@ -24,6 +26,14 @@ length_sentences, number_dict = preprocess.get_training_vars()
 testsentences, testnumber_dict = preprocess.get_testing_output()
 batch_num = 0
 
+print("len", length_sentences)
+
+losses = []
+
+# early stop when
+# 10 occurances where loss does not decrease
+# by > 0.01
+early_stopping = early_stopping.EarlyStopping(tolerance=20, min_delta=0.01)
 
 for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all sentences
     trainingbatch = batches.make_training_batch(i)  # making batch
@@ -37,6 +47,11 @@ for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all 
     optimizer.step()
     batch_num += 1
     print(f'Batch Number: {batch_num} | Loss: {loss_print:.4f}')
+    losses.append(loss_print.item())
+
+    if early_stopping(loss_print.item()):
+        print("Early stopping at epoch:", i, "batch:", batch_num)
+        break
 
 index = random.randrange(len(testsentences) - 1)
 old_sentence = testsentences[index] + testsentences[index + 1]
@@ -68,4 +83,9 @@ for w in printinput_ids[0]:
             list_for_output.append(testnumber_dict[w.item()])
 
 newsentence = " ".join(list_for_output)
-print(newsentence)  # sentence with Harry Potter noun
+
+
+averageLast5 = losses[-5:]
+average = sum(averageLast5) / 5
+print("average last 5 losses:", average)
+

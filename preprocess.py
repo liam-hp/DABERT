@@ -1,24 +1,26 @@
 from datasets import load_dataset
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 dataset = load_dataset("embedding-data/simple-wiki", split="train")
 
 
 joined_data = [item for inner_list in dataset['set'] for item in inner_list]
 
+# new max length of our sentences
+# before was 512
 maxLength = 32
 
 sentences = []
 for s in joined_data:
     words = s.split(" ")
+    # truncate if too big
     if len(words) > maxLength:
         words = words[:maxLength]
+    # pad if too short
     if len(words) < maxLength:
         words += ["[PAD]"] * (maxLength - len(words))
     st = " ".join(str(elem) for elem in words)
     sentences.append(st) 
 
-# print(joined_data_correct_length)
 
 word_dict = {'[PAD]': 0, '[CLS]': 1, '[SEP]': 2, '[MASK]': 3}  # preset tokens
 
@@ -38,8 +40,8 @@ number_dict = {i: w for i, w in
 # print(word_list)
 
 
-trainSentences = sentences[:int(len(sentences) * 0.8)]
-testSentences = sentences[:int(len(sentences) * 0.2)]
+trainSentences = sentences[:int(len(sentences) * 0.5)]
+testSentences = sentences[int(len(sentences) * 0.5):]
 
 def get_training_material():
     return trainSentences, number_dict, word_dict, token_list, vocab_size

@@ -1,5 +1,6 @@
 import random
 import torch
+from torch import cuda
 import torch.optim as optim
 import torch.nn as nn
 import model_architecture
@@ -8,12 +9,16 @@ import batches
 import preprocess
 from tqdm import tqdm
 
+device = "cuda" if cuda.is_available() else "cpu"
+
+
 model_architecture
 batches
 # format_text
 preprocess
 
 model = model_architecture.get_model()
+model.to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.AdamW(model.parameters(), lr=8e-7)
 length_sentences, number_dict = preprocess.get_training_vars()

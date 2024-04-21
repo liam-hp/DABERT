@@ -17,8 +17,7 @@ batches
 # format_text
 preprocess
 
-model = model_architecture.get_model()
-model.to(device)
+model = model_architecture.get_model().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.AdamW(model.parameters(), lr=8e-7)
 length_sentences, number_dict = preprocess.get_training_vars()

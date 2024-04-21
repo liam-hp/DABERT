@@ -4,21 +4,24 @@ import torch.optim as optim
 import torch.nn as nn
 import model_architecture
 import batches
-import format_text
+# import format_text
+import preprocess
+from tqdm import tqdm
 
 model_architecture
 batches
-format_text
+# format_text
+preprocess
 
 model = model_architecture.get_model()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.AdamW(model.parameters(), lr=8e-7)
-length_sentences, number_dict = format_text.get_training_vars()
-testsentences, testnumber_dict = format_text.get_testing_output()
+length_sentences, number_dict = preprocess.get_training_vars()
+testsentences, testnumber_dict = preprocess.get_testing_output()
 batch_num = 0
 
 
-for i in range(0, round(length_sentences / 6), 128):  # loops through all sentences
+for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all sentences
     trainingbatch = batches.make_training_batch(i)  # making batch
     input_ids, segment_ids, masked_tokens, masked_pos = map(torch.LongTensor,
                                                             zip(*trainingbatch))

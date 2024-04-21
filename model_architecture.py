@@ -2,13 +2,14 @@ import torch
 import torch.nn as nn
 import math
 import numpy as np
-import format_text
+# import format_text
+import preprocess
 from attention import Attention, ScaledDotProductAttention
 
 
-vocabulary_size, sentences_length = format_text.get_model_sizes()
+vocabulary_size, sentences_length = preprocess.get_model_sizes()
 
-sen_length = 512  # set sentence length to this for all so equal sentence length
+sen_length = 32  # set sentence length to this for all so equal sentence length
 batch_size = sentences_length
 num_layers = 6  # number of Encoder Layer
 num_heads = 12  # number of heads in Multi-Head Attention

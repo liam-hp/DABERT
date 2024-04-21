@@ -6,6 +6,7 @@ import torch.nn as nn
 import model_architecture
 import early_stopping
 import batches
+from torch.utils.data import DataLoader
 # import format_text
 
 import preprocess
@@ -19,34 +20,42 @@ batches
 # format_text
 preprocess
 
-model = model_architecture.get_model().to(device)
+model = model_architecture.BERT(attention_type="SLL").to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.AdamW(model.parameters(), lr=8e-7)
+early_stopping = early_stopping.EarlyStopping(tolerance=20, min_delta=0.01) # early stop when 10 occurances where loss does not decrease by > 0.01
+
 length_sentences, number_dict = preprocess.get_training_vars()
 testsentences, testnumber_dict = preprocess.get_testing_output()
+
 batch_num = 0
-
-print("len", length_sentences)
-
 losses = []
 
-# early stop when
-# 10 occurances where loss does not decrease
-# by > 0.01
-early_stopping = early_stopping.EarlyStopping(tolerance=20, min_delta=0.01)
+print(f"Initialization complete. Training on {length_sentences} example sentences.")
+
+# ! Why are we looping through all sentences? random selection via dataloader would be safer. If we want consistency we can just seed random via
+#                                                                                           https://pytorch.org/docs/stable/notes/randomness.html
+
+#sentences, number_dict, word_dict, token_list, vocab_size = preprocess.get_training_material()
+#train_loader = DataLoader(sentences, batch_size=6, shuffle=True)
+
+#testsentences, testword_dict, testtoken_list = preprocess.get_testing_material()
+#test_loader = DataLoader(testsentences, batch_size=6, shuffle=True)
+
 
 for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all sentences
     trainingbatch = batches.make_training_batch(i)  # making batch
     input_ids, segment_ids, masked_tokens, masked_pos = map(torch.LongTensor,
                                                             zip(*trainingbatch))
-    logits_lm = model(input_ids, segment_ids, masked_pos)
-    loss = criterion(logits_lm.transpose(1, 2), masked_tokens)  # for masked LM
-    loss_print = loss / 12  # dividing loss over 12 pairs
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
+    logits_lm = model(input_ids, segment_ids, masked_pos) # get our model output for the batch
+    loss = criterion(logits_lm.transpose(1, 2), masked_tokens)  # calculate loss for masked LM
+    optimizer.zero_grad() # zero the gradient before recalculate
+    loss.backward() # backprop!
+    optimizer.step() # optimize the model
+    
     batch_num += 1
-    print(f'Batch Number: {batch_num} | Loss: {loss_print:.4f}')
+    loss_print = loss / 12  # dividing loss over 12 pairs - given loss is arbitrary, we can scale this however looks best for visualizing progress
+    print(f'Batch Number: {batch_num} | Sentences trained on: {batch_num*6} | Loss: {loss_print:.4f}')
     losses.append(loss_print.item())
 
     if early_stopping(loss_print.item()):

@@ -1,4 +1,4 @@
-# DABERT: Replacing BERT's attention layers with mini linears 
+# DABERT: Replacing BERT's attention layers with mini linear DNNs 
  Re-writing State of the Union addresses with Harry Potter
 
 # Project by : Liam Patty, Alexis Ballo, Alexander Nichols

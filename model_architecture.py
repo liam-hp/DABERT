@@ -4,7 +4,7 @@ import math
 import numpy as np
 # import format_text
 import preprocess
-from attentionalex import Attention, SingleLinearAttentionLayer
+from attention import Attention
 from torch import cuda
 
 device = "cuda" if cuda.is_available() else "cpu"
@@ -20,8 +20,6 @@ d_model = 768  # Embedding size
 d_ff = 768 * 4  # 4*d_model, FeedForward dimension
 d_k = d_v = 64  # dimension of K(=Q), V
 dropout = 0.1 # dropout to prevent overfitting
-d_v = 64  # dimension of K(=Q), V
-dropout = 0.1
 
 def get_attention_pad_mask(seq_q, seq_k):
     """
@@ -95,12 +93,13 @@ class EncoderLayer(nn.Module):
     """
     def __init__(self, attention_type):
         super(EncoderLayer, self).__init__()
-        # simple replace of the Attentino head
-        self.enc_self_attention = Attention(d_model, d_v, num_heads, attention_type)
+        # simple replace of the Attention head
+        self.enc_self_attention = Attention(d_model, d_k, d_v, num_heads, attention_type)
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):
-        enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_self_attention_mask)  # enc_inputs to same Q,K,V
+        enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_inputs,
+                                                         enc_self_attention_mask) # enc_inputs to same Q,K,V
         enc_outputs = self.pos_ffn(enc_outputs)  # enc_outputs: [batch_size x len_q x d_model]
         return enc_outputs
 

@@ -14,7 +14,7 @@
 # Partition (queue) 
 #SBATCH --time=00:01:00
 # Time limit hrs:min:sec 
-#SBATCH --chdir=DABERT/
+#SBATCH --partition=gpu-standard 
 
 # print SLURM envirionment variables
 echo "Job ID: ${SLURM_JOB_ID}"

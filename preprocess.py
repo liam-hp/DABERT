@@ -7,7 +7,8 @@ joined_data = [item for inner_list in dataset['set'] for item in inner_list]
 
 # new max length of our sentences
 # before was 512
-maxLength = 32
+# space for cls and sep
+maxLength = 32 - 2
 
 sentences = []
 for s in joined_data:
@@ -16,8 +17,9 @@ for s in joined_data:
     if len(words) > maxLength:
         words = words[:maxLength]
     # pad if too short
-    if len(words) < maxLength:
-        words += ["[PAD]"] * (maxLength - len(words))
+    # moving this to batches
+    # if len(words) < maxLength:
+    #     words += ["[PAD]"] * (maxLength - len(words))
     st = " ".join(str(elem) for elem in words)
     sentences.append(st) 
 

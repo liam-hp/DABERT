@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 device = "cuda" if cuda.is_available() else "cpu"
 
+print("device", device)
 
 model_architecture
 batches
@@ -49,9 +50,9 @@ for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all 
     print(f'Batch Number: {batch_num} | Loss: {loss_print:.4f}')
     losses.append(loss_print.item())
 
-    if early_stopping(loss_print.item()):
-        print("Early stopping at epoch:", i, "batch:", batch_num)
-        break
+#     if early_stopping(loss_print.item()):
+#         print("Early stopping at epoch:", i, "batch:", batch_num)
+#         break
 
 index = random.randrange(len(testsentences) - 1)
 old_sentence = testsentences[index] + testsentences[index + 1]

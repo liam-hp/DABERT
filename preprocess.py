@@ -40,8 +40,9 @@ number_dict = {i: w for i, w in
 # print(word_list)
 
 
-trainSentences = sentences[:int(len(sentences) * 0.5)]
-testSentences = sentences[int(len(sentences) * 0.5):]
+# 90/10 split
+trainSentences = sentences[:int(len(sentences) * 0.9)]
+testSentences = sentences[int(len(sentences) * 0.9):]
 
 def get_training_material():
     return trainSentences, number_dict, word_dict, token_list, vocab_size

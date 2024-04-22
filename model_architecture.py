@@ -2,35 +2,41 @@ import torch
 import torch.nn as nn
 import math
 import numpy as np
-import format_text
+# import format_text
+import preprocess
 from attentionalex import Attention, SingleLinearAttentionLayer
+from torch import cuda
+
+device = "cuda" if cuda.is_available() else "cpu"
 
 
-vocabulary_size, sentences_length = format_text.get_model_sizes()
+vocabulary_size, sentences_length = preprocess.get_model_sizes()
 
-sen_length = 512  # set sentence length to this for all so equal sentence length
+sen_length = 32  # set sentence length to this for all so equal sentence length
 batch_size = sentences_length
-num_layers = 6  # number of Encoder Layer
+num_layers = 6  # number of Encoder layers
 num_heads = 12  # number of heads in Multi-Head Attention
-d_model = 768  # Embedding Size
+d_model = 768  # Embedding size
 d_ff = 768 * 4  # 4*d_model, FeedForward dimension
+d_k = d_v = 64  # dimension of K(=Q), V
+dropout = 0.1 # dropout to prevent overfitting
 d_v = 64  # dimension of K(=Q), V
 dropout = 0.1
 
 def get_attention_pad_mask(seq_q, seq_k):
     """
-    :return: padded attention mask
+        padded attention mask
     """
     batch_size_mask, len_q = seq_q.size()
     batch_size_mask, len_k = seq_k.size()
     pad_attention_mask = seq_k.data.eq(0).unsqueeze(
         1)  # batch_size x 1 x len_k(=len_q), one is masking. eq(0) is PAD token
-    return pad_attention_mask.expand(batch_size_mask, len_q, len_k)  # batch_size x len_q x len_k
+    return pad_attention_mask.expand(batch_size_mask, len_q, len_k) # batch_size x len_q x len_k
 
 
 def tanh(x):
     """
-    activation functions
+        tanh: https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_4.23.22_PM_dcuMBJl.png
     """
     return (2.0 * torch.special.expit(2.0 * x) - math.sqrt(
         2.0 / math.pi))
@@ -38,33 +44,40 @@ def tanh(x):
 
 def gelu(x):
     """
-    activation functions
+        gelu: https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_12.48.44_PM.png
     """
     return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0 / math.pi)) * (x + 0.044715 * (x ** 3.0)))
 
 
 class Embedding(nn.Module):
     """
-    does the actual embedding
+        embeddings: https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_12.48.44_PM.png
+        
+        token embeddings: vector embeddings of the word
+        position embeddings: vector embeddings of the word's position
+        segment embeddings: vector embeddings that identify the sentence of a word
+
     """
     def __init__(self):
         super(Embedding, self).__init__()
         self.tok_embed = nn.Embedding(vocabulary_size, d_model)  # token embedding
         self.pos_embed = nn.Embedding(sen_length, d_model)  # position embedding
-        self.seg_embed = nn.Embedding(2, d_model)
+        self.seg_embed = nn.Embedding(2, d_model) # segment embedding
         self.norm = nn.LayerNorm(d_model)
 
     def forward(self, x, seg):
-        seq_len = x.size(1)
-        pos = torch.arange(seq_len, dtype=torch.long)
-        pos = pos.unsqueeze(0).expand_as(x)  # (seq_len,) -> (batch_size, seq_len)
-        embedding = self.tok_embed(x) + self.pos_embed(pos) + self.seg_embed(seg)
-        return self.norm(embedding)
+        seq_len = x.size(1) # get sequence length for the input tokens
+        pos = torch.arange(seq_len, dtype=torch.long) # generate a list of position indicies
+        pos = pos.unsqueeze(0).expand_as(x).to(device) # (seq_len,) -> (batch_size, seq_len), copy position indicies to each example
+
+        embedding = self.tok_embed(x) + self.pos_embed(pos) + self.seg_embed(seg) # concatenate all three embeddings to form the input
+
+        return self.norm(embedding) # normalize and return
 
 
 class PoswiseFeedForwardNet(nn.Module):
     """
-    forward model
+        simple linear double feed forward layer
     """
     def __init__(self):
         super(PoswiseFeedForwardNet, self).__init__()
@@ -78,28 +91,31 @@ class PoswiseFeedForwardNet(nn.Module):
 
 class EncoderLayer(nn.Module):
     """
-    encoding model
+        encoding model: applies attention and feed forward
     """
-    def __init__(self):
+    def __init__(self, attention_type):
         super(EncoderLayer, self).__init__()
         # simple replace of the Attentino head
         self.enc_self_attention = Attention(d_model, d_v, num_heads)
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):
+        enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_inputs,
+                                                         enc_self_attention_mask) # enc_inputs to same Q,K,V
         enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_self_attention_mask)  # enc_inputs to same Q,K,V
         enc_outputs = self.pos_ffn(enc_outputs)  # enc_outputs: [batch_size x len_q x d_model]
-        return enc_outputs 
+        return enc_outputs
 
 
 class BERT(nn.Module):
     """
-    BERT model put together
+        BERT model put together
     """
-    def __init__(self):
+    def __init__(self, attention_type):
         super(BERT, self).__init__()
+
         self.embedding = Embedding()
-        self.layers = nn.ModuleList([EncoderLayer() for _ in range(num_layers)])
+        self.layers = nn.ModuleList([EncoderLayer(attention_type) for _ in range(num_layers)])
         self.fc = nn.Linear(d_model, d_model)
         self.activ1 = tanh
         self.linear = nn.Sequential(nn.Linear(d_model, d_model), nn.ReLU(), nn.Dropout(dropout),
@@ -113,10 +129,6 @@ class BERT(nn.Module):
         self.decoder_bias = nn.Parameter(torch.zeros(num_vocab))
 
     def forward(self, modelinput_ids, modelsegment_ids, modelmasked_pos):
-        # print("forward with")
-        # print("    input_ids: ", modelinput_ids.shape)
-        # print("    segment_ids: ", modelsegment_ids.shape)
-
         output = self.embedding(modelinput_ids, modelsegment_ids)
         enc_self_attention_mask = get_attention_pad_mask(modelinput_ids, modelinput_ids)
 
@@ -133,6 +145,3 @@ class BERT(nn.Module):
 
         return logits_lm_model
 
-
-def get_model():
-    return BERT()

@@ -31,10 +31,7 @@ def make_training_batch(start_index):
     for idx in range(start_index, end_index):
         tokens_a_index, tokens_b_index = idx, idx + 1
         tokens_a = token_list[tokens_a_index]
-        # print("tokens_a", tokens_a, len(tokens_a))
-        # print("len", len(tokens_a), len(tokens_b))
-        #traininput_ids = [word_dict['[CLS]']] + tokens_a + [word_dict['[SEP]']] + tokens_b + [
-        #    word_dict['[SEP]']]
+
         actualSentenceLength = len(tokens_a)
         paddingNeeded = sen_length - actualSentenceLength
         traininput_ids = [word_dict['[CLS]']] + tokens_a + [word_dict['[SEP]']] 
@@ -76,14 +73,6 @@ def make_training_batch(start_index):
             trainmasked_pos.extend([0] * num_pads)
             
         batch.append([traininput_ids, trainsegment_ids, trainmasked_tokens, trainmasked_pos])
-
-    # print("training batch", batch)
-    # for i in range(len(batch)):
-    #     print("training batch", batch[i])
-    #     for j in range(len(batch[i])):
-    #         print(batch[i][j])
-    #         print("\tshape:", len(batch[i][j]))
-
 
     return batch
 

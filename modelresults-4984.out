@@ -1,4 +1,0 @@
-Job ID: 4984
-Node: node002 echo Starting: 04/21/24 22:43:59
-aballo
-slurmstepd: error: *** JOB 4984 ON node002 CANCELLED AT 2024-04-21T22:49:17 DUE TO TIME LIMIT ***

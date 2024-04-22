@@ -31,14 +31,27 @@ def make_training_batch(start_index):
     for idx in range(start_index, end_index):
         tokens_a_index, tokens_b_index = idx, idx + 1
         tokens_a, tokens_b = token_list[tokens_a_index], token_list[tokens_b_index]  # grab sentence pair
+        # print("tokens_a", tokens_a, len(tokens_a))
         # print("len", len(tokens_a), len(tokens_b))
-        traininput_ids = [word_dict['[CLS]']] + tokens_a + [word_dict['[SEP]']] + tokens_b + [
-            word_dict['[SEP]']]
-        trainsegment_ids = [0] * (sen_length)# + [1] * (len(tokens_b) + 1)
-        traininput_ids = traininput_ids[:sen_length]  # truncated for dimension purposes
-        trainsegment_ids = trainsegment_ids[:]  # truncated for dimension purposes
+        #traininput_ids = [word_dict['[CLS]']] + tokens_a + [word_dict['[SEP]']] + tokens_b + [
+        #    word_dict['[SEP]']]
+        actualSentenceLength = len(tokens_a)
+        paddingNeeded = sen_length - actualSentenceLength
+        traininput_ids = [word_dict['[CLS]']] + tokens_a + [word_dict['[SEP]']] 
+
+
+
+
+
+
+        # print("training input ids", traininput_ids)
+        trainsegment_ids = [0] * (actualSentenceLength) + [1] * (paddingNeeded)
+        #traininput_ids = traininput_ids[:sen_length]  # truncated for dimension purposes
+        #trainsegment_ids = trainsegment_ids[:]  # truncated for dimension purposes
         num_predictions = min(max_predictions, max(1, int(round(len(
             traininput_ids) * 0.15))))  # grab 15% of words
+        #cand_maked_pos = [pos for pos, token in enumerate(traininput_ids) if
+        #                  token != word_dict['[CLS]'] and token != word_dict['[SEP]']]
         cand_maked_pos = [pos for pos, token in enumerate(traininput_ids) if
                           token != word_dict['[CLS]'] and token != word_dict['[SEP]']]
         sampled_cmpos_copy = cand_maked_pos
@@ -52,24 +65,57 @@ def make_training_batch(start_index):
         random.shuffle(cand_maked_pos)  # shuffle words
         trainmasked_tokens, trainmasked_pos = [], []
 
-        for pos in cand_maked_pos[:num_predictions]:
-            trainmasked_pos.append(pos)
-            trainmasked_tokens.append(traininput_ids[pos])
-            if pos in sampled_sampled_80:  # 80% of the marked-to-mask words, as defined above
-                traininput_ids[pos] = word_dict['[MASK]']  # make mask
-            elif pos in sampled_sampled_10:
-                tempindex = random.randint(0, vocab_size - 1)
-                traininput_ids[pos] = word_dict[number_dict[tempindex]]  # replace
+        # print("masking", cand_maked_pos)
+        # print("num predictions", num_predictions)
+        # print("cut", cand_maked_pos[:num_predictions])
+        # print("masking - 80", sampled_sampled_80)
+        # print("masking - 10", sampled_sampled_10)
+
+
+        # random order of tokens we can mask. By index
+        cand_maked_pos
+
+        
+        # tokens to mask by index 
+        sampled_sampled_80
+        # print("maskingL", sampled_sampled_80)
+
+        # new:
+        # position of masked tokens
+        trainmasked_pos
+        # token values of the masked tokens
+        trainmasked_tokens
+        for i in range(0, len(sampled_sampled_80)):
+            token = cand_maked_pos[i]
+            trainmasked_pos.append(token)
+            trainmasked_tokens.append(traininput_ids[token])
+            traininput_ids[token] = word_dict['[MASK]']
+
+        # for pos in cand_maked_pos[:num_predictions]:
+        #     trainmasked_pos.append(pos)
+        #     trainmasked_tokens.append(traininput_ids[pos])
+        #     if pos in sampled_sampled_80:  # 80% of the marked-to-mask words, as defined above
+        #         # print('for pos', pos, "in", sampled_sampled_80)
+        #         traininput_ids[pos] = word_dict['[MASK]']  # make mask
+        #     elif pos in sampled_sampled_10:
+        #         tempindex = random.randint(0, vocab_size - 1)
+        #         traininput_ids[pos] = word_dict[number_dict[tempindex]]  # replace
 
         num_pads = sen_length - len(traininput_ids)
         traininput_ids.extend([0] * num_pads)  # padding input ids
-        trainsegment_ids.extend([0] * num_pads)  # padding segment ids
+        #trainsegment_ids.extend([0] * num_pads)  # padding segment ids
 
         if max_predictions > num_predictions:  # padding mask
             num_pads = max_predictions - num_predictions
             trainmasked_tokens.extend([0] * num_pads)
             trainmasked_pos.extend([0] * num_pads)
+            
 
+        # print("input", traininput_ids, len(traininput_ids))
+        # print("seg", trainsegment_ids, len(trainsegment_ids))
+        # print("masked tokens", trainmasked_tokens, len(trainmasked_tokens))
+        # print("pso", trainmasked_pos, len(trainmasked_pos))
+        # print("returning")
         batch.append([traininput_ids, trainsegment_ids, trainmasked_tokens, trainmasked_pos])
 
     # print("training batch", batch)

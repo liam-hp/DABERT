@@ -1,8 +1,0 @@
-Job ID: 4976
-Node: node002 echo Starting: 04/21/24 22:17:19
-aballo
-Traceback (most recent call last):
-  File "/storage/homes/aballo/DABERT/hyperParam.py", line 7, in <module>
-    paperLosses.append(BERT_run.run_bert("paper"))
-TypeError: run_bert() takes 0 positional arguments but 1 was given
-Ending: 04/21/24 22:17:48

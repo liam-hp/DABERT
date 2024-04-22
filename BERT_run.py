@@ -52,6 +52,9 @@ def run_bert(attention_type):
         masked_tokens = masked_tokens.to(device)
         masked_pos = masked_pos.to(device)
 
+        # print("batch input", input_ids)
+        # print("batch masked", masked_tokens)
+        # print("batch madked pos", masked_pos)
         logits_lm = model(input_ids, segment_ids, masked_pos)
         loss = criterion(logits_lm.transpose(1, 2), masked_tokens)  # for masked LM
         loss_print = loss / 12  # dividing loss over 12 pairs

@@ -10,18 +10,18 @@ from torch.utils.data import DataLoader
 # import format_text
 
 import preprocess
-from tqdm import tqdm
 
 device = "cuda" if cuda.is_available() else "cpu"
 
+print("device", device)
 
 model_architecture
 batches
 # format_text
 preprocess
 
-model = model_architecture.BERT(attention_type="SLL").to(device)
-criterion = nn.CrossEntropyLoss()
+model = model_architecture.BERT("SLL").to(device) # Single Linear Layer
+criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.AdamW(model.parameters(), lr=8e-7)
 early_stopping = early_stopping.EarlyStopping(tolerance=20, min_delta=0.01) # early stop when 10 occurances where loss does not decrease by > 0.01
 
@@ -42,31 +42,48 @@ print(f"Initialization complete. Training on {length_sentences} example sentence
 #testsentences, testword_dict, testtoken_list = preprocess.get_testing_material()
 #test_loader = DataLoader(testsentences, batch_size=6, shuffle=True)
 
-
-for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all sentences
+batch_count = round(length_sentences / 6)
+best_loss = 100
+for i in range(0, batch_count, 128):  # loops through all sentences
     trainingbatch = batches.make_training_batch(i)  # making batch
     input_ids, segment_ids, masked_tokens, masked_pos = map(torch.LongTensor,
                                                             zip(*trainingbatch))
+    input_ids = input_ids.to(device)
+    segment_ids = segment_ids.to(device)
+    masked_tokens = masked_tokens.to(device)
+    masked_pos = masked_pos.to(device)
+
     logits_lm = model(input_ids, segment_ids, masked_pos) # get our model output for the batch
     loss = criterion(logits_lm.transpose(1, 2), masked_tokens)  # calculate loss for masked LM
+
     optimizer.zero_grad() # zero the gradient before recalculate
     loss.backward() # backprop!
     optimizer.step() # optimize the model
     
     batch_num += 1
     loss_print = loss / 12  # dividing loss over 12 pairs - given loss is arbitrary, we can scale this however looks best for visualizing progress
-    print(f'Batch Number: {batch_num} | Sentences trained on: {batch_num*6} | Loss: {loss_print:.4f}')
+    
+    if(loss < best_loss):
+        best_loss = loss
+        print(f'Batch Number: {batch_num} | Training Progress: {batch_num*128/batch_count} | Loss: {loss_print:.4f}')
+    elif(batch_num % 10 == 0 or 
+       batch_num == 1 or batch_num*128 == batch_count-1):
+        print(f'Batch Number: {batch_num} | Training Progress: {batch_num*128/batch_count} | Loss: {loss_print:.4f}')
     losses.append(loss_print.item())
     
-    if early_stopping(loss_print.item()):
-        print("Early stopping at epoch:", i, "batch:", batch_num)
-        break
+    # if early_stopping(loss_print.item()):
+    #     print("Early stopping at epoch:", i, "batch:", batch_num)
+    #     break
 
 index = random.randrange(len(testsentences) - 1)
 old_sentence = testsentences[index] + testsentences[index + 1]
 printinput_ids, printsegment_ids, printmasked_tokens, printmasked_pos = map(torch.LongTensor,
                                                                             zip(*batches.make_testing_sentence(index)))
 
+printinput_ids = printinput_ids.to(device)
+printsegment_ids = printsegment_ids.to(device)
+printmasked_tokens = printmasked_tokens.to(device)
+printmasked_pos = printmasked_pos.to(device)
 masked_sentence = " ".join(
     [testnumber_dict[w.item()] for w in printinput_ids[0] if testnumber_dict[w.item()] != '[PAD]'])
 # print('masked sentence : ', masked_sentence)  # sentence with mask still in
@@ -75,7 +92,7 @@ masked_sentence = " ".join(
       # [pos.item() for pos in printmasked_tokens[0] if pos.item() != 0])  # tokens of words covered by mask
 
 logits_lm = model(printinput_ids, printsegment_ids, printmasked_pos)
-logits_lm = logits_lm.data.max(2)[1][0].data.numpy()
+logits_lm = logits_lm.data.max(2)[1][0].cpu().data.numpy()
 print('predict masked tokens list : ', [pos for pos in logits_lm if pos != 0])  # tokens of predicted noun
 
 masked_token_list = [pos.item() for pos in printmasked_tokens[0] if pos.item() != 0]

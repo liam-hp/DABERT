@@ -5,6 +5,9 @@ import numpy as np
 # import format_text
 import preprocess
 from attention import Attention, ScaledDotProductAttention
+from torch import cuda
+
+device = "cuda" if cuda.is_available() else "cpu"
 
 
 vocabulary_size, sentences_length = preprocess.get_model_sizes()
@@ -26,7 +29,7 @@ def get_attention_pad_mask(seq_q, seq_k):
     batch_size_mask, len_k = seq_k.size()
     pad_attention_mask = seq_k.data.eq(0).unsqueeze(
         1)  # batch_size x 1 x len_k(=len_q), one is masking. eq(0) is PAD token
-    return pad_attention_mask.expand(batch_size_mask, len_q, len_k)  # batch_size x len_q x len_k
+    return pad_attention_mask.expand(batch_size_mask, len_q, len_k) # batch_size x len_q x len_k
 
 
 def tanh(x):
@@ -63,8 +66,10 @@ class Embedding(nn.Module):
     def forward(self, x, seg):
         seq_len = x.size(1) # get sequence length for the input tokens
         pos = torch.arange(seq_len, dtype=torch.long) # generate a list of position indicies
-        pos = pos.unsqueeze(0).expand_as(x)  # (seq_len,) -> (batch_size, seq_len), copy position indicies to each example
+        pos = pos.unsqueeze(0).expand_as(x).to(device) # (seq_len,) -> (batch_size, seq_len), copy position indicies to each example
+
         embedding = self.tok_embed(x) + self.pos_embed(pos) + self.seg_embed(seg) # concatenate all three embeddings to form the input
+
         return self.norm(embedding) # normalize and return
 
 
@@ -94,9 +99,9 @@ class EncoderLayer(nn.Module):
 
     def forward(self, enc_inputs, enc_self_attention_mask):
         enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_inputs,
-                                                         enc_self_attention_mask)  # enc_inputs to same Q,K,V
+                                                         enc_self_attention_mask) # enc_inputs to same Q,K,V
         enc_outputs = self.pos_ffn(enc_outputs)  # enc_outputs: [batch_size x len_q x d_model]
-        return enc_outputs 
+        return enc_outputs
 
 
 class BERT(nn.Module):
@@ -105,6 +110,7 @@ class BERT(nn.Module):
     """
     def __init__(self, attention_type):
         super(BERT, self).__init__()
+
         self.embedding = Embedding()
         self.layers = nn.ModuleList([EncoderLayer(attention_type) for _ in range(num_layers)])
         self.fc = nn.Linear(d_model, d_model)
@@ -120,10 +126,6 @@ class BERT(nn.Module):
         self.decoder_bias = nn.Parameter(torch.zeros(num_vocab))
 
     def forward(self, modelinput_ids, modelsegment_ids, modelmasked_pos):
-        # print("forward with")
-        # print("    input_ids: ", modelinput_ids.shape)
-        # print("    segment_ids: ", modelsegment_ids.shape)
-
         output = self.embedding(modelinput_ids, modelsegment_ids)
         enc_self_attention_mask = get_attention_pad_mask(modelinput_ids, modelinput_ids)
 

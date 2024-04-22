@@ -3,8 +3,10 @@
 import torch
 import torch.nn as nn
 import numpy as np
-
+from torch import cuda
 # multihead atteition
+
+device = "cuda" if cuda.is_available() else "cpu"
 
 class Attention(nn.Module):
     """
@@ -22,6 +24,11 @@ class Attention(nn.Module):
         self.W_Q = nn.Linear(d_model, d_k * num_heads)
         self.W_K = nn.Linear(d_model, d_k * num_heads)
         self.W_V = nn.Linear(d_model, d_v * num_heads)
+        self.attention = SingleLinearAttentionLayer(d_k)
+        # scaledAttention = ScaledDotProductAttention(self.d_k)
+
+        self.linear = nn.Linear(num_heads * d_v, d_model)
+        self.layerNorm = nn.LayerNorm(d_model)
 
     def forward(self, qmat, kmat, vmat, attention_mask):
         # q: [batch_size x len_q x d_model] 
@@ -79,7 +86,7 @@ class Attention(nn.Module):
 
         # 6) convert concatenated attention to model size
 
-        output = nn.Linear(self.num_heads * self.d_v, self.d_model)(context)
+        output = self.linear(context)
         # [batch size x sequence length x concatenated attention] 
         # converts to ---> 
         # [batch size x sequence length]
@@ -87,7 +94,7 @@ class Attention(nn.Module):
         # 7) add new outputs with old query valeus and normalize
 
         # output: [batch_size x len_q x d_model]
-        return nn.LayerNorm(self.d_model)(output + residual)  
+        return self.layerNorm(output + residual)  
 
 
 class SingleLinearAttentionLayer(nn.Module):
@@ -104,7 +111,10 @@ class SingleLinearAttentionLayer(nn.Module):
     # @staticmethod
     def forward(self, qmat, kmat, vmat, attention_mask):
         
-        combined = torch.cat((qmat, kmat, vmat), 3)
+        combined = torch.cat((qmat, kmat, vmat), 3).to(device)
+
+        # print("combined", combined.shape)
+
         output = self.linearLayer(combined)
         return output
 

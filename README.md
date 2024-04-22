@@ -1,7 +1,7 @@
-# BERT State-Of-The-Union Modeling
+# DABERT: Replacing BERT's attention layers with mini linears 
  Re-writing State of the Union addresses with Harry Potter
 
-# Project by : Alexander Nichols and Jessica Warren
+# Project by : Liam Patty, Alexis Ballo, Alexander Nichols
 
 # Credits & Foundational Code Sources :
 
@@ -14,8 +14,3 @@
 [Activation Layers](https://pytorch.org/docs/master/special.html)
 
 [Original Paper](https://arxiv.org/pdf/1810.04805.pdf)
-
-This project takes the complete works of Harry Potter by J.K. Rowling, and trains a modified BERT model 
-(to fit parameters of our training) on the text. Then, taking a sample few sentences from State of the Union addresses,
-we mask all nouns and use our Harry Potter-trained model to replace those nouns with what it thinks is best, to get 
-some quite comical (and not so serious) results.

@@ -14,16 +14,16 @@ vocabulary_size, sentences_length = preprocess.get_model_sizes()
 
 sen_length = 32  # set sentence length to this for all so equal sentence length
 batch_size = sentences_length
-num_layers = 6  # number of Encoder Layer
+num_layers = 6  # number of Encoder layers
 num_heads = 12  # number of heads in Multi-Head Attention
-d_model = 768  # Embedding Size
+d_model = 768  # Embedding size
 d_ff = 768 * 4  # 4*d_model, FeedForward dimension
 d_k = d_v = 64  # dimension of K(=Q), V
-dropout = 0.1
+dropout = 0.1 # dropout to prevent overfitting
 
 def get_attention_pad_mask(seq_q, seq_k):
     """
-    :return: padded attention mask
+        padded attention mask
     """
     batch_size_mask, len_q = seq_q.size()
     batch_size_mask, len_k = seq_k.size()
@@ -34,7 +34,7 @@ def get_attention_pad_mask(seq_q, seq_k):
 
 def tanh(x):
     """
-    activation functions
+        tanh: https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_4.23.22_PM_dcuMBJl.png
     """
     return (2.0 * torch.special.expit(2.0 * x) - math.sqrt(
         2.0 / math.pi))
@@ -42,35 +42,40 @@ def tanh(x):
 
 def gelu(x):
     """
-    activation functions
+        gelu: https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_12.48.44_PM.png
     """
     return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0 / math.pi)) * (x + 0.044715 * (x ** 3.0)))
 
 
 class Embedding(nn.Module):
     """
-    does the actual embedding
+        embeddings: https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_12.48.44_PM.png
+        
+        token embeddings: vector embeddings of the word
+        position embeddings: vector embeddings of the word's position
+        segment embeddings: vector embeddings that identify the sentence of a word
+
     """
     def __init__(self):
         super(Embedding, self).__init__()
         self.tok_embed = nn.Embedding(vocabulary_size, d_model)  # token embedding
         self.pos_embed = nn.Embedding(sen_length, d_model)  # position embedding
-        self.seg_embed = nn.Embedding(2, d_model)
+        self.seg_embed = nn.Embedding(2, d_model) # segment embedding
         self.norm = nn.LayerNorm(d_model)
 
     def forward(self, x, seg):
-        seq_len = x.size(1)
-        pos = torch.arange(seq_len, dtype=torch.long)
-        pos = pos.unsqueeze(0).expand_as(x).to(device) # (seq_len,) -> (batch_size, seq_len)
+        seq_len = x.size(1) # get sequence length for the input tokens
+        pos = torch.arange(seq_len, dtype=torch.long) # generate a list of position indicies
+        pos = pos.unsqueeze(0).expand_as(x).to(device) # (seq_len,) -> (batch_size, seq_len), copy position indicies to each example
 
-        embedding = self.tok_embed(x) + self.pos_embed(pos) + self.seg_embed(seg)
+        embedding = self.tok_embed(x) + self.pos_embed(pos) + self.seg_embed(seg) # concatenate all three embeddings to form the input
 
-        return self.norm(embedding)
+        return self.norm(embedding) # normalize and return
 
 
 class PoswiseFeedForwardNet(nn.Module):
     """
-    forward model
+        simple linear double feed forward layer
     """
     def __init__(self):
         super(PoswiseFeedForwardNet, self).__init__()
@@ -84,12 +89,12 @@ class PoswiseFeedForwardNet(nn.Module):
 
 class EncoderLayer(nn.Module):
     """
-    encoding model
+        encoding model: applies attention and feed forward
     """
-    def __init__(self):
+    def __init__(self, attention_type):
         super(EncoderLayer, self).__init__()
-        # simple replace of the Attentino head
-        self.enc_self_attention = Attention(d_model, d_k, d_v, num_heads)
+        # simple replace of the Attention head
+        self.enc_self_attention = Attention(d_model, d_k, d_v, num_heads, attention_type)
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):
@@ -101,13 +106,13 @@ class EncoderLayer(nn.Module):
 
 class BERT(nn.Module):
     """
-    BERT model put together
+        BERT model put together
     """
-    def __init__(self):
+    def __init__(self, attention_type):
         super(BERT, self).__init__()
 
         self.embedding = Embedding()
-        self.layers = nn.ModuleList([EncoderLayer() for _ in range(num_layers)])
+        self.layers = nn.ModuleList([EncoderLayer(attention_type) for _ in range(num_layers)])
         self.fc = nn.Linear(d_model, d_model)
         self.activ1 = tanh
         self.linear = nn.Sequential(nn.Linear(d_model, d_model), nn.ReLU(), nn.Dropout(dropout),
@@ -137,6 +142,3 @@ class BERT(nn.Module):
 
         return logits_lm_model
 
-
-def get_model():
-    return BERT() 

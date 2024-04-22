@@ -54,8 +54,10 @@ class Attention(nn.Module):
         self.W_Q = nn.Linear(d_model, d_k * num_heads)
         self.W_K = nn.Linear(d_model, d_k * num_heads)
         self.W_V = nn.Linear(d_model, d_v * num_heads)
-        self.attention = SingleLinearAttentionLayer(d_k)
-        # scaledAttention = ScaledDotProductAttention(self.d_k)
+        # our implementation
+        # self.attention = SingleLinearAttentionLayer(d_k)
+        # traditional solftmax one
+        self.attention = ScaledDotProductAttention(d_k)
 
         self.linear = nn.Linear(num_heads * d_v, d_model)
         self.layerNorm = nn.LayerNorm(d_model)

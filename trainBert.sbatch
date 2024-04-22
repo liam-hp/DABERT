@@ -20,7 +20,7 @@ echo "Node: ${SLURMD_NODENAME}" echo "Starting: "`date +"%D %T"`
 echo "$USER"
 # Running your code here 
 #python BERT_run.py
-python hyperParam.py 
+python BERT_run.py 
 # End of job info 
 echo "Ending: "`date +"%D %T"`
 

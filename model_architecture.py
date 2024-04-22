@@ -96,7 +96,7 @@ class EncoderLayer(nn.Module):
     def __init__(self, attention_type):
         super(EncoderLayer, self).__init__()
         # simple replace of the Attentino head
-        self.enc_self_attention = Attention(d_model, d_v, num_heads)
+        self.enc_self_attention = Attention(d_model, d_v, num_heads, attention_type)
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):

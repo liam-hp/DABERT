@@ -18,8 +18,8 @@ model_architecture
 batches
 preprocess
 
-def runBert():
-    model = model_architecture.get_model()
+def runBert(type):
+    model = model_architecture.get_model(type)
     model = model.to(device)
 
     criterion = nn.CrossEntropyLoss().to(device)
@@ -100,7 +100,7 @@ def runBert():
 
     averageLast5 = losses[-5:]
     average = sum(averageLast5) / 5
-    print("average last 5 losses:", average)
+    # print("average last 5 losses:", average)
     return average
 
 # runBert()

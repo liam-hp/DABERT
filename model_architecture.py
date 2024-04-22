@@ -86,10 +86,10 @@ class EncoderLayer(nn.Module):
     """
     encoding model
     """
-    def __init__(self):
+    def __init__(self, type):
         super(EncoderLayer, self).__init__()
         # simple replace of the Attentino head
-        self.enc_self_attention = Attention(d_model, d_k, d_v, num_heads)
+        self.enc_self_attention = Attention(d_model, d_k, d_v, num_heads, type)
         self.pos_ffn = PoswiseFeedForwardNet()
 
     def forward(self, enc_inputs, enc_self_attention_mask):
@@ -103,11 +103,11 @@ class BERT(nn.Module):
     """
     BERT model put together
     """
-    def __init__(self):
+    def __init__(self, type):
         super(BERT, self).__init__()
 
         self.embedding = Embedding()
-        self.layers = nn.ModuleList([EncoderLayer() for _ in range(num_layers)])
+        self.layers = nn.ModuleList([EncoderLayer(type) for _ in range(num_layers)])
         self.fc = nn.Linear(d_model, d_model)
         self.activ1 = tanh
         self.linear = nn.Sequential(nn.Linear(d_model, d_model), nn.ReLU(), nn.Dropout(dropout),
@@ -138,5 +138,5 @@ class BERT(nn.Module):
         return logits_lm_model
 
 
-def get_model():
-    return BERT() 
+def get_model(type):
+    return BERT(type) 

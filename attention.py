@@ -43,7 +43,7 @@ class Attention(nn.Module):
     """
     head of model
     """
-    def __init__(self, d_model, d_k, d_v, num_heads):
+    def __init__(self, d_model, d_k, d_v, num_heads, type):
         super(Attention, self).__init__()
         self.d_model = d_model
         self.d_k = d_k 
@@ -57,7 +57,10 @@ class Attention(nn.Module):
         # our implementation
         # self.attention = SingleLinearAttentionLayer(d_k)
         # traditional solftmax one
-        self.attention = ScaledDotProductAttention(d_k)
+        if type == "paper": 
+            self.attention = ScaledDotProductAttention(d_k)
+        else:
+            self.attention = SingleLinearAttentionLayer(d_k)
 
         self.linear = nn.Linear(num_heads * d_v, d_model)
         self.layerNorm = nn.LayerNorm(d_model)

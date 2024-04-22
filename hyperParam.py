@@ -2,9 +2,18 @@
 import BERT_run 
 
 BERT_run
-losses = []
+paperLosses = []
 for i in range(0,5):
-    losses.append(BERT_run.runBert())
+    paperLosses.append(BERT_run.runBert("paper"))
 
 
-print(losses)
+paperAverage = sum(paperLosses) / len(paperLosses)
+
+oursLosses = []
+for i in range(0,5):
+    oursLosses.append(BERT_run.runBert("ours"))
+
+oursLosses = sum(oursLosses) / len(oursLosses)
+
+print("paper:", paperAverage)
+print("us:", oursLosses)

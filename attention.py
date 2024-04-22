@@ -24,7 +24,7 @@ class Attention(nn.Module):
         self.W_Q = nn.Linear(d_model, d_k * num_heads)
         self.W_K = nn.Linear(d_model, d_k * num_heads)
         self.W_V = nn.Linear(d_model, d_v * num_heads)
-        self.attention = SingleLinearAttentionLayer(d_k)
+        self.attention = SingleLinearAttentionLayer(self.d_k) # why is this not self.selectedAttention? And why is it when i change it to that it gives me an error, but if we have it as it rn it doesn't?
         # scaledAttention = ScaledDotProductAttention(self.d_k)
 
         self.linear = nn.Linear(num_heads * d_v, d_model)
@@ -105,13 +105,13 @@ class SingleLinearAttentionLayer(nn.Module):
         super(SingleLinearAttentionLayer, self).__init__()
         self.d_k = d_k
 
-        self.linearLayer = nn.Linear(d_k * 3, d_k)
+        self.linearLayer = nn.Linear(d_k * 2, d_k)
 
 
     # @staticmethod
     def forward(self, qmat, kmat, vmat, attention_mask):
         
-        combined = torch.cat((qmat, kmat, vmat), 3).to(device)
+        combined = torch.cat((qmat, vmat), 3).to(device) # if we want to prove that kmat isn't necessary in our DNN, then we can't include it here
 
         # print("combined", combined.shape)
 

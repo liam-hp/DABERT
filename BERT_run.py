@@ -42,6 +42,9 @@ print(f"Initialization complete. Training on {length_sentences} example sentence
 #testsentences, testword_dict, testtoken_list = preprocess.get_testing_material()
 #test_loader = DataLoader(testsentences, batch_size=6, shuffle=True)
 
+
+# we can use a tokenizer for tokenizing, but masking is a different issue. let's discuss if we want to mask, / what's our target? in this, it's replacing nouns but i sincerly doubt that's our interest this time around
+
 batch_count = round(length_sentences / 6)
 best_loss = 100
 for i in range(0, batch_count, 128):  # loops through all sentences

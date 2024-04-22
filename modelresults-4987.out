@@ -1,0 +1,4 @@
+Job ID: 4987
+Node: node002 echo Starting: 04/21/24 23:12:49
+aballo
+slurmstepd: error: *** JOB 4987 ON node002 CANCELLED AT 2024-04-21T23:14:19 ***

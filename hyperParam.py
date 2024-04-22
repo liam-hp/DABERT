@@ -3,17 +3,18 @@ import BERT_run
 
 BERT_run
 paperLosses = []
-for i in range(0,5):
-    paperLosses.append(BERT_run.runBert("paper"))
+BERT_run.run_bert("paper")
+# for i in range(0,20):
+#     paperLosses.append(BERT_run.run_bert("paper"))
 
 
-paperAverage = sum(paperLosses) / len(paperLosses)
+# paperAverage = sum(paperLosses) / len(paperLosses)
 
-oursLosses = []
-for i in range(0,5):
-    oursLosses.append(BERT_run.runBert("ours"))
+# oursLosses = []
+# for i in range(0,20):
+#     oursLosses.append(BERT_run.run_bert("SSL"))
 
-oursLosses = sum(oursLosses) / len(oursLosses)
+# oursLosses = sum(oursLosses) / len(oursLosses)
 
-print("paper:", paperAverage)
-print("us:", oursLosses)
+# print("paper:", paperAverage)
+# print("us:", oursLosses)

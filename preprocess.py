@@ -37,8 +37,6 @@ for sentence in sentences:
 number_dict = {i: w for i, w in
                enumerate(word_dict)}  # get dictionary of all possible numerical representations of words
 
-# print(word_list)
-
 
 # 90/10 split
 trainSentences = sentences[:int(len(sentences) * 0.9)]

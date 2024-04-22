@@ -1,0 +1,106 @@
+Job ID: 4981
+Node: node002 echo Starting: 04/21/24 22:33:39
+aballo
+Initialization complete. Training on 184005 example sentences.
+Batch Number: 1 | Loss: 6.0253
+Batch Number: 2 | Loss: 5.4408
+Batch Number: 3 | Loss: 4.4854
+Batch Number: 4 | Loss: 3.8089
+Batch Number: 5 | Loss: 3.1246
+Batch Number: 6 | Loss: 2.6809
+Batch Number: 7 | Loss: 2.0716
+Batch Number: 8 | Loss: 1.6718
+Batch Number: 9 | Loss: 1.1373
+Batch Number: 10 | Loss: 1.0206
+Batch Number: 11 | Loss: 0.9980
+Batch Number: 12 | Loss: 0.9563
+Batch Number: 13 | Loss: 0.8366
+Batch Number: 14 | Loss: 0.8542
+Batch Number: 15 | Loss: 0.9183
+Batch Number: 16 | Loss: 0.9283
+Batch Number: 17 | Loss: 0.9411
+Batch Number: 18 | Loss: 0.6903
+Batch Number: 19 | Loss: 0.8108
+Batch Number: 20 | Loss: 0.8077
+Batch Number: 21 | Loss: 1.0347
+Batch Number: 22 | Loss: 0.8706
+Batch Number: 23 | Loss: 0.9571
+Batch Number: 24 | Loss: 0.6989
+Batch Number: 25 | Loss: 0.8962
+Batch Number: 26 | Loss: 0.9183
+Batch Number: 27 | Loss: 0.6997
+Batch Number: 28 | Loss: 0.8461
+Batch Number: 29 | Loss: 0.8473
+Batch Number: 30 | Loss: 0.7782
+Batch Number: 31 | Loss: 0.7111
+Batch Number: 32 | Loss: 0.7824
+Batch Number: 33 | Loss: 0.7256
+Batch Number: 34 | Loss: 0.3983
+Batch Number: 35 | Loss: 0.6367
+Batch Number: 36 | Loss: 0.8464
+Batch Number: 37 | Loss: 0.5549
+Batch Number: 38 | Loss: 0.8464
+Batch Number: 39 | Loss: 0.8191
+Batch Number: 40 | Loss: 0.6129
+Batch Number: 41 | Loss: 0.8825
+Batch Number: 42 | Loss: 0.8514
+Batch Number: 43 | Loss: 0.7082
+Batch Number: 44 | Loss: 0.9075
+Batch Number: 45 | Loss: 0.8676
+Batch Number: 46 | Loss: 0.6619
+Batch Number: 47 | Loss: 0.6126
+Batch Number: 48 | Loss: 0.5479
+Batch Number: 49 | Loss: 0.4130
+Batch Number: 50 | Loss: 0.4848
+Batch Number: 51 | Loss: 0.6513
+Batch Number: 52 | Loss: 0.9946
+Batch Number: 53 | Loss: 0.8711
+Batch Number: 54 | Loss: 0.4247
+Batch Number: 55 | Loss: 0.5655
+Batch Number: 56 | Loss: 0.9394
+Batch Number: 57 | Loss: 0.8274
+Batch Number: 58 | Loss: 0.8691
+Batch Number: 59 | Loss: 0.4282
+Batch Number: 60 | Loss: 0.4519
+Batch Number: 61 | Loss: 0.5152
+Batch Number: 62 | Loss: 0.7273
+Batch Number: 63 | Loss: 0.4659
+Batch Number: 64 | Loss: 0.7459
+Batch Number: 65 | Loss: 0.8767
+Batch Number: 66 | Loss: 0.5381
+Batch Number: 67 | Loss: 0.6981
+Batch Number: 68 | Loss: 0.8064
+Batch Number: 69 | Loss: 0.8393
+Batch Number: 70 | Loss: 0.5808
+Batch Number: 71 | Loss: 0.6463
+Traceback (most recent call last):
+  File "/storage/homes/aballo/DABERT/hyperParam.py", line 7, in <module>
+    paperLosses.append(BERT_run.run_bert("paper"))
+  File "/storage/homes/aballo/DABERT/BERT_run.py", line 55, in run_bert
+    logits_lm = model(input_ids, segment_ids, masked_pos)
+  File "/storage/homes/aballo/DABERT/adaVenv/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/storage/homes/aballo/DABERT/adaVenv/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/storage/homes/aballo/DABERT/model_architecture.py", line 133, in forward
+    output = layer(output, enc_self_attention_mask)
+  File "/storage/homes/aballo/DABERT/adaVenv/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/storage/homes/aballo/DABERT/adaVenv/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/storage/homes/aballo/DABERT/model_architecture.py", line 101, in forward
+    enc_outputs = self.enc_self_attention(enc_inputs, enc_inputs, enc_inputs,
+  File "/storage/homes/aballo/DABERT/adaVenv/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/storage/homes/aballo/DABERT/adaVenv/lib64/python3.9/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/storage/homes/aballo/DABERT/attention.py", line 72, in forward
+    multi_head_self_attention = self.selectedAttention.forward(q_s, k_s, v_s, attention_mask)
+  File "/storage/homes/aballo/DABERT/attention.py", line 163, in forward
+    finalAttention = torch.matmul(attention, vmat)
+RuntimeError: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+Ending: 04/21/24 22:34:19

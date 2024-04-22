@@ -8,59 +8,25 @@ from torch import cuda
 
 device = "cuda" if cuda.is_available() else "cpu"
 
-class ScaledDotProductAttention(nn.Module):
-    """
-    uses attention pad for scores
-    """
-    def __init__(self, d_k):
-        super(ScaledDotProductAttention, self).__init__()
-        self.d_k = d_k
-
-
-    # @staticmethod
-    def forward(self, qmat, kmat, vmat, attention_mask):
-
-        # scores = QK^T / sqrt(d_k)
-        scores = torch.matmul(qmat, kmat.transpose(-1, -2)) / np.sqrt(
-            self.d_k)  # scores : [batch_size x n_heads x len_q(=len_k) x len_k(=len_q)]
-
-        # Basically removes elements of scores tensor were we have a masked token
-        scores.masked_fill_(attention_mask, -1e9) 
-
-        # Softmax on the scores matrix
-        attention = nn.Softmax(dim=-1)(scores)
-
-        # context = softmax(QK^T / sqrt(d_k))V
-        # context = torch.matmul(attention, vmat)
-        finalAttention = torch.matmul(attention, vmat)
-
-        # return context, attention
-        return finalAttention #, attention
-
-
-
 class Attention(nn.Module):
     """
-    head of model
+        head of model
     """
-    def __init__(self, d_model, d_k, d_v, num_heads, type):
+    def __init__(self, d_model, d_k, d_v, num_heads, attention_type):
         super(Attention, self).__init__()
         self.d_model = d_model
         self.d_k = d_k 
         self.d_v = d_v 
         self.num_heads = num_heads 
+        self.selectedAttention = SingleLinearAttentionLayer(self.d_k) if attention_type == "SLL" else ScaledDotProductAttention(self.d_k)
 
-        # Q, K, V for each head
+        # initialize Q, K, V for each head
         self.W_Q = nn.Linear(d_model, d_k * num_heads)
         self.W_K = nn.Linear(d_model, d_k * num_heads)
         self.W_V = nn.Linear(d_model, d_v * num_heads)
         # our implementation
         # self.attention = SingleLinearAttentionLayer(d_k)
         # traditional solftmax one
-        if type == "paper": 
-            self.attention = ScaledDotProductAttention(d_k)
-        else:
-            self.attention = SingleLinearAttentionLayer(d_k)
 
         self.linear = nn.Linear(num_heads * d_v, d_model)
         self.layerNorm = nn.LayerNorm(d_model)
@@ -78,10 +44,14 @@ class Attention(nn.Module):
         # a) Do all the linear projections in batch from d_model => d_k x num_heads
         # b) .view(): [batch_size x len_q x d_model] -> [batch_size x len_q x n_heads x d_k]
         # c) .transpose(): [batch_size x len_q x n_heads x d_k] -> [batch_size x n_heads x len_q x d_k]
-        q_s = self.W_Q(qmat).view(batch_size_head, -1, self.num_heads, self.d_k).transpose(1, 2)
+
+
+        q_s = self.W_Q(qmat).view(batch_size_head, -1, self.num_heads, self.d_k).transpose(1, 2) 
         # q_s: [batch_size x n_heads x len_q x d_k]
+
         k_s = self.W_K(kmat).view(batch_size_head, -1, self.num_heads, self.d_k).transpose(1, 2)
         # k_s: [batch_size x n_heads x len_k x d_k]
+
         v_s = self.W_V(vmat).view(batch_size_head, -1, self.num_heads, self.d_v).transpose(1, 2)
         # v_s: [batch_size x n_heads x len_k x d_v]
 
@@ -97,8 +67,9 @@ class Attention(nn.Module):
         # 4) pass attention through each head
 
         # attention = [batch_size x n_heads x seq_len x d_k]
-        
-        multi_head_self_attention = self.attention(q_s, k_s, v_s, attention_mask)
+
+
+        multi_head_self_attention = self.selectedAttention.forward(q_s, k_s, v_s, attention_mask)
         # output: for each batch, for each attention head, for each token in the sentence,
         # the attention value
 
@@ -129,7 +100,7 @@ class Attention(nn.Module):
 
 class SingleLinearAttentionLayer(nn.Module):
     """
-    uses attention pad for scores
+        replacing attention computation with a simple mini-DNN that may be able to learn a more complex relationship
     """
     def __init__(self, d_k):
         super(SingleLinearAttentionLayer, self).__init__()
@@ -140,18 +111,6 @@ class SingleLinearAttentionLayer(nn.Module):
 
     # @staticmethod
     def forward(self, qmat, kmat, vmat, attention_mask):
-
-        # q: [batch_size x num_heads x d_model x d_k] 
-        # k: [batch_size x num_heads x d_model x d_k]
-        # v: [batch_size x num_heads x d_model x d_k]
-
-        # 1) get the size of the batch
-        residual, batch_size_head = qmat, qmat.size(0)
-
-
-        # print("shape:", qmat.shape)
-        # print("kshape:", kmat.shape)
-        # print("vshape:", vmat.shape)
         
         combined = torch.cat((qmat, kmat, vmat), 3).to(device)
 
@@ -159,9 +118,6 @@ class SingleLinearAttentionLayer(nn.Module):
 
         output = self.linearLayer(combined)
         return output
-
-
-
 
         # # scores = QK^T / sqrt(d_k)
         # scores = torch.matmul(qmat, kmat.transpose(-1, -2)) / np.sqrt(
@@ -179,4 +135,34 @@ class SingleLinearAttentionLayer(nn.Module):
 
         # return context, attention
         # return finalAttention #, attention
+
+class ScaledDotProductAttention(nn.Module):
+    """
+        uses attention pad for scores
+    """
+    def __init__(self, d_k):
+        super(ScaledDotProductAttention, self).__init__()
+        self.d_k = d_k
+
+
+    # @staticmethod
+    def forward(self, qmat, kmat, vmat, attention_mask):
+
+        # scores = QK^T / sqrt(d_k)
+        scores = torch.matmul(qmat, kmat.transpose(-1, -2)) / np.sqrt(
+            self.d_k)  # scores : [batch_size x n_heads x len_q(=len_k) x len_k(=len_q)]
+
+        # Basically removes elements of scores tensor were we have a masked token
+        scores.masked_fill_(attention_mask, -1e9) 
+
+        # Softmax on the scores matrix
+        attention = nn.Softmax(dim=-1)(scores)
+
+        # context = softmax(QK^T / sqrt(d_k))V
+        # context = torch.matmul(attention, vmat)
+        finalAttention = torch.matmul(attention, vmat)
+
+        # return context, attention
+        return finalAttention #, attention
+
 

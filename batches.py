@@ -85,8 +85,6 @@ def make_training_batch(start_index):
 
 def make_testing_sentence(rand_index):
     """
-    grabs testing sentence for State of the Union address, masks all nouns to be replaces with Harry Potter nouns
-    :return: test batch, similar to training batch
     """
     batch = []
 

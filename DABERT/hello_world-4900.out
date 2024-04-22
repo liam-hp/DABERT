@@ -1,0 +1,5 @@
+Job ID: 4900
+Node: node018 echo Starting: 04/21/24 19:43:25
+wpatty
+python: can't open file '/storage/homes/wpatty/DABERT/DABERT/BERT_run.py': [Errno 2] No such file or directory
+Ending: 04/21/24 19:43:25

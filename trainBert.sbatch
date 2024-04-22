@@ -13,8 +13,7 @@
 #SBATCH --partition=standard
 # Partition (queue) 
 #SBATCH --time=00:01:00
-# Time limit hrs:min:sec 
-#SBATCH --chdir=DABERT/
+# Time limit hrs:min:sec
 
 # print SLURM envirionment variables
 echo "Job ID: ${SLURM_JOB_ID}"

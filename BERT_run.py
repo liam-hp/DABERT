@@ -57,7 +57,7 @@ for i in tqdm(range(0, round(length_sentences / 6), 128)):  # loops through all 
     loss_print = loss / 12  # dividing loss over 12 pairs - given loss is arbitrary, we can scale this however looks best for visualizing progress
     print(f'Batch Number: {batch_num} | Sentences trained on: {batch_num*6} | Loss: {loss_print:.4f}')
     losses.append(loss_print.item())
-
+    
     if early_stopping(loss_print.item()):
         print("Early stopping at epoch:", i, "batch:", batch_num)
         break

@@ -4,8 +4,11 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-
 # we will need to customize this
+
+from transformers import BertTokenizer, BertForMaskedLM, DataCollatorForLanguageModeling
+from torch.utils.data import DataLoader, Dataset
+import torch
 
 def get_data_loader(sentences, batch_size=32, max_length=32):
     """
@@ -30,5 +33,8 @@ def get_data_loader(sentences, batch_size=32, max_length=32):
     dataset = SimpleDataset(encoded_inputs)
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=True, mlm_probability=0.15)
 
-    dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=data_collator.collate_batch)
+    dataloader = DataLoader(dataset, batch_size=batch_size, collate_fn=data_collator)
     return dataloader
+    
+    
+# Example usage of the dataset
